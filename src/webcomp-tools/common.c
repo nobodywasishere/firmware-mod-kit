@@ -10,6 +10,8 @@
 #include <elf.h>
 #include "common.h"
 
+struct global globals;
+
 /* Given the physical and virtual section loading addresses, convert a virtual address to a physical file offset */
 uint32_t file_offset(uint32_t address, uint32_t virtual, uint32_t physical)
 {
@@ -106,7 +108,7 @@ struct entry_info *next_entry(unsigned char *data, uint32_t size)
 				/* Convert data to little endian, if necessary */
 				ntoh_struct(info);
 			}
-				
+
 			/* A NULL entry name signifies the end of the array */
 			if(info->name_ptr == 0)
 			{
@@ -165,7 +167,7 @@ int parse_elf_header(unsigned char *data, size_t size)
 			else
 			{
 				globals.endianess = LITTLE_ENDIAN;
-			
+
 				phnum = header->e_phnum;
 				phoff = header->e_phoff;
 			}
@@ -264,7 +266,7 @@ int find_websRomPageIndex(char *data, size_t size)
 				tmpoff += len;
 			}
 		}
-	
+
 		if(poff)
 		{
 			/* Convert the file offset to a virtual address */
@@ -276,14 +278,14 @@ int find_websRomPageIndex(char *data, size_t size)
 				string_vaddr = htonl(string_vaddr);
 			}
 
-			/* Loop through the binary looking for references to the string's virtual address */	
+			/* Loop through the binary looking for references to the string's virtual address */
 			for(i=globals.tv_offset; i<(size-sizeof(struct file_entry)); i++)
 			{
 				memcpy((void *) &entry, data+i, sizeof(struct file_entry));
 
 				/* The first entry in the structure array should have an offset of zero and a size greater than zero */
-				if(entry.name == string_vaddr && 
-				  ((entry.offset == 0 && entry.size < entry.name) || 
+				if(entry.name == string_vaddr &&
+				  ((entry.offset == 0 && entry.size < entry.name) ||
 				   (entry.size > 0)))
 				{
 					globals.index_address = i;
@@ -304,7 +306,7 @@ void ntoh_struct(struct entry_info *info)
 	{
 		info->name_ptr = (uint32_t) ntohl(info->name_ptr);
 		info->size = (uint32_t) ntohl(info->size);
-		
+
 		/* If using the new format, we calculate the offset, so it is going to be in host byte format */
 		if(!globals.use_new_format)
 		{
@@ -472,12 +474,12 @@ int file_write(char *file, unsigned char *data, size_t size)
 }
 
 /* Recursive mkdir (same as mkdir -p) */
-void mkdir_p(char *dir) 
+void mkdir_p(char *dir)
 {
         char tmp[FILENAME_MAX] = { 0 };
         char *p = NULL;
         size_t len = 0;
- 
+
         snprintf(tmp, sizeof(tmp),"%s",dir);
         len = strlen(tmp);
 
@@ -488,7 +490,7 @@ void mkdir_p(char *dir)
 
         for(p = tmp + 1; *p; p++)
 	{
-                if(*p == '/') 
+                if(*p == '/')
 		{
                         *p = 0;
                         mkdir(tmp, S_IRWXU);

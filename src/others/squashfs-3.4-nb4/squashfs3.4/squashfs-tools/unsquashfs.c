@@ -48,7 +48,7 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
-#include <sys/sysctl.h>
+/* #include <sys/sysctl.h> */
 
 #ifndef linux
 #define __BYTE_ORDER BYTE_ORDER
@@ -442,7 +442,7 @@ struct cache_entry *cache_get(struct cache *cache, long long block, int size)
 		pthread_mutex_unlock(&cache->mutex);
 	} else {
 		/* not in the cache */
-		
+
 		/* first try to allocate new block */
 		if(cache->count < cache->max_buffers) {
 			entry = malloc(sizeof(struct cache_entry));
@@ -489,12 +489,12 @@ failed:
 	return NULL;
 }
 
-	
+
 void cache_block_ready(struct cache_entry *entry, int error)
 {
 	/* mark cache entry as being complete, reading and (if necessary)
  	 * decompression has taken place, and the buffer is valid for use.
- 	 * If an error occurs reading or decompressing, the buffer also 
+ 	 * If an error occurs reading or decompressing, the buffer also
  	 * becomes ready but with an error... */
 	pthread_mutex_lock(&entry->cache->mutex);
 	entry->pending = FALSE;
@@ -586,7 +586,7 @@ int print_filename(char *pathname, struct inode *inode)
 		userstr = dummy;
 	} else
 		userstr = user->pw_name;
-		 
+
 	if((group = getgrgid(inode->gid)) == NULL) {
 		sprintf(dummy2, "%d", inode->gid);
 		groupstr = dummy2;
@@ -607,7 +607,7 @@ int print_filename(char *pathname, struct inode *inode)
 			break;
 		case S_IFCHR:
 		case S_IFBLK:
-			padchars = TOTALCHARS - strlen(userstr) - strlen(groupstr) - 7; 
+			padchars = TOTALCHARS - strlen(userstr) - strlen(groupstr) - 7;
 
 			printf("%*s%3d,%3d ", padchars > 0 ? padchars : 0, " ", (int) inode->data >> 8, (int) inode->data & 0xff);
 			break;
@@ -619,10 +619,10 @@ int print_filename(char *pathname, struct inode *inode)
 	if((inode->mode & S_IFMT) == S_IFLNK)
 		printf(" -> %s", inode->symlink);
 	printf("\n");
-		
+
 	return 1;
 }
-	
+
 
 int add_entry(struct hash_table_entry *hash_table[], int start, int bytes)
 {
@@ -681,13 +681,13 @@ int read_block(long long start, long long *next, char *block)
 {
 	unsigned short c_byte;
 	int offset = 2;
-	
+
 	if(swap) {
 		if(read_bytes(start, 2, block) == FALSE)
 			goto failed;
 		((unsigned char *) &c_byte)[1] = block[0];
-		((unsigned char *) &c_byte)[0] = block[1]; 
-	} else 
+		((unsigned char *) &c_byte)[0] = block[1];
+	} else
 		if(read_bytes(start, 2, (char *)&c_byte) == FALSE)
 			goto failed;
 
@@ -1173,7 +1173,7 @@ static struct inode *read_inode(unsigned int start_block, unsigned int offset)
 			i.start = inode->start_block;
 			i.block_ptr = block_ptr + sizeof(*inode);
 			break;
-		}	
+		}
 		case SQUASHFS_LREG_TYPE: {
 			squashfs_lreg_inode_header *inode = &header.lreg;
 
@@ -1195,7 +1195,7 @@ static struct inode *read_inode(unsigned int start_block, unsigned int offset)
 			i.start = inode->start_block;
 			i.block_ptr = block_ptr + sizeof(*inode);
 			break;
-		}	
+		}
 		case SQUASHFS_SYMLINK_TYPE: {
 			squashfs_symlink_inode_header *inodep = &header.symlink;
 
@@ -1416,7 +1416,7 @@ struct inode *read_inode_2(unsigned int start_block, unsigned int offset)
 			i.start = inode->start_block;
 			i.block_ptr = block_ptr + sizeof(*inode);
 			break;
-		}	
+		}
 		case SQUASHFS_SYMLINK_TYPE: {
 			squashfs_symlink_inode_header_2 *inodep = &header.symlink;
 
@@ -1543,7 +1543,7 @@ struct inode *read_inode_1(unsigned int start_block, unsigned int offset)
 			i.frag_bytes = 0;
 			i.offset = 0;
 			break;
-		}	
+		}
 		case SQUASHFS_SYMLINK_TYPE: {
 			squashfs_symlink_inode_header_1 *inodep = &header.symlink;
 
@@ -1669,14 +1669,14 @@ struct dir *squashfs_opendir(unsigned int block_start, unsigned int offset, stru
 	dir->mtime = (*i)->time;
 	dir->dirs = NULL;
 
-	while(bytes < size) {			
+	while(bytes < size) {
 		if(swap) {
 			squashfs_dir_header sdirh;
 			memcpy(&sdirh, directory_table + bytes, sizeof(sdirh));
 			SQUASHFS_SWAP_DIR_HEADER(&dirh, &sdirh);
 		} else
 			memcpy(&dirh, directory_table + bytes, sizeof(dirh));
-	
+
 		dir_count = dirh.count + 1;
 		TRACE("squashfs_opendir: Read directory header @ byte position %d, %d directory entries\n", bytes, dir_count);
 		bytes += sizeof(dirh);
@@ -1757,14 +1757,14 @@ struct dir *squashfs_opendir_2(unsigned int block_start, unsigned int offset, st
 	dir->mtime = (*i)->time;
 	dir->dirs = NULL;
 
-	while(bytes < size) {			
+	while(bytes < size) {
 		if(swap) {
 			squashfs_dir_header_2 sdirh;
 			memcpy(&sdirh, directory_table + bytes, sizeof(sdirh));
 			SQUASHFS_SWAP_DIR_HEADER_2(&dirh, &sdirh);
 		} else
 			memcpy(&dirh, directory_table + bytes, sizeof(dirh));
-	
+
 		dir_count = dirh.count + 1;
 		TRACE("squashfs_opendir: Read directory header @ byte position %d, %d directory entries\n", bytes, dir_count);
 		bytes += sizeof(dirh);
@@ -2127,7 +2127,7 @@ void squashfs_stat(char *source)
 	char *mkfs_str = ctime(&mkfs_time);
 	unsigned char b[5];
 	int offset, dicSize, i;
-	
+
 
 #if __BYTE_ORDER == __BIG_ENDIAN
 	printf("Found a valid %s endian SQUASHFS %d:%d superblock on %s.\n", swap ? "little" : "big", sBlk.s_major, sBlk.s_minor, source);
@@ -2237,7 +2237,7 @@ int read_super(char *source)
 		sBlk.guid_start = sBlk.guid_start_2;
 		sBlk.inode_table_start = sBlk.inode_table_start_2;
 		sBlk.directory_table_start = sBlk.directory_table_start_2;
-		
+
 		if(sBlk.s_major == 1) {
 			sBlk.block_size = sBlk.block_size_1;
 			sBlk.fragment_table_start = sBlk.uid_start;
@@ -2286,7 +2286,7 @@ struct pathname *process_extract_files(struct pathname *path, char *filename)
 	fclose(fd);
 	return path;
 }
-		
+
 
 /* reader thread.  This thread processes read requests queued by the
  * cache_get() routine. */
@@ -2410,7 +2410,7 @@ void *deflator(void *arg)
 
 		/* block has been either successfully decompressed, or an error
  		 * occurred, clear pending flag, set error appropriately and
- 		 * wake up any threads waiting on this block */ 
+ 		 * wake up any threads waiting on this block */
 		cache_block_ready(entry, res != Z_OK);
 	}
 }
@@ -2605,7 +2605,7 @@ int main(int argc, char *argv[])
 	root_process = geteuid() == 0;
 	if(root_process)
 		umask(0);
-	
+
 	for(i = 1; i < argc; i++) {
 		if(*argv[i] != '-')
 			break;
